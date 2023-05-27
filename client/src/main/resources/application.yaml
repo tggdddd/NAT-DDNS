@@ -1,0 +1,6 @@
+server:
+  port: 9301
+icu:
+  websocket:
+    port: 3090
+    host: localhost

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>客户端设置</title>
+</head>
+<body>
+
+连接状态：<span id="status">enable</span>
+
+<form onsubmit="event.preventDefault(); connect()">
+    <label for="handleName">配置名
+        <input id="handleName" name="handleName" placeholder="如：my" required value="1">
+    </label>
+    <label for="host">映射地址
+        <input id="host" name="host" placeholder="如：localhost:7777" required value="baidu.com">
+    </label>
+    <label for="host">映射端口地址
+        <input id="port" name="host" placeholder="请输入端口" required value="7786">
+    </label>
+    <button type="submit" value="连接">连接</button>
+</form>
+<script>
+    /*网页元素*/
+    var statusElement = document.querySelector("#status");
+    var handleNameElement = document.querySelector("#handleName");
+    var hostElement = document.querySelector("#host");
+    var portElement = document.querySelector("#port");
+    var socket;
+
+    /*连接服务器*/
+    function connect() {
+        console.log("连接服务器")
+        var url = window.location.href
+        url = url.substring(0, url.substring(url.indexOf("//") === -1 ? 0 : url.indexOf("//") + 1).indexOf("/"))
+        url = url + '/connect';
+        var name = handleNameElement.value;
+        var host = hostElement.value;
+        var serverPost = portElement.value;
+        url += `/${name}/${host}/${serverPost}`
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+
+                } else {
+                    alert("无法连接到远程服务器，请检测配置")
+                }
+            }
+        };
+        xhttp.open('GET', url, true);
+        xhttp.setRequestHeader('Content-type', 'text/plain');
+        xhttp.send();
+        test();
+    }
+
+    /*关闭连接*/
+    function disconnect() {
+        if (socket) {
+            socket.close();
+            socket = null;
+        }
+    }
+
+    /*设置处理器*/
+    function setProperty() {
+        var name = handleNameElement.value;
+        var host = hostElement.value;
+        var data = {
+            name: name,
+            host: host
+        }
+        socket.send(JSON.stringify(data));
+    }
+
+    /*显示状态*/
+    function setStatus(isConnected) {
+        if (isConnected) {
+            statusElement.innerText = "连接中";
+            statusElement.className = "connected"
+        } else {
+            statusElement.innerText = "已断开";
+            statusElement.className = "disConnect"
+        }
+    }
+
+    /*测试是否正常*/
+    function test() {
+        var xhr = new XMLHttpRequest();
+        var url = window.location.href;
+        url = url.substring(0, url.substring(url.indexOf("//") === -1 ? 0 : url.indexOf("//") + 1).indexOf("/"))
+        xhr.open("get", url + '/connect/ping');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200 && xhr.responseText == true)
+                    setStatus(true)
+                console.log(xhr.responseText);
+            } else {
+                setStatus(false)
+            }
+        };
+        xhr.send();
+    }
+
+    /*定时检测*/
+    setInterval(() => {
+        test()
+    }, 30000)
+</script>
+</body>
+</html>
